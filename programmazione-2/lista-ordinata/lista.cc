@@ -41,3 +41,35 @@ void stampa(const Lista& lista, std::ostream& out)
         out << std::endl;
     }
 }
+
+void diff(const Lista& l1, const Lista& l2, std::ostream& out)
+{
+    if (l1 != nullptr)
+    {
+        if (l2 == nullptr)
+        {
+            out << l1->valore << " ";
+        }
+        else
+        {
+            if (l1->valore < l2->valore)
+            {
+                out << l1->valore << " ";
+
+                diff(l1->next, l2, out);
+            }
+            else if (l1->valore == l2->valore)
+            {
+                diff(l1->next, l2->next, out);
+            }
+            else
+            {
+                diff(l1, l2->next, out);
+            }
+        }
+    }
+    else
+    {
+        out << std::endl;
+    }
+}
