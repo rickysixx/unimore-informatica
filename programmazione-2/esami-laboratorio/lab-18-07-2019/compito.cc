@@ -2,6 +2,7 @@
 #include <fstream>
 #include "grafi.h"
 #include "node.h"
+#include "coda.h"
 
 const char* GRAFO_NOME_FILE = "graph";
 const char* NODI_NOME_FILE = "node";
@@ -70,6 +71,62 @@ void stampa(const graph& grafo, const node* nodi)
     }
 }
 
+int* totalLike(const graph& grafo, const node* nodi)
+{
+    int* numero_like_per_utente = new int[grafo.dim];
+
+    for (int i = 0; i < grafo.dim; i++)
+    {
+        numero_like_per_utente[i] = 0;
+    }
+
+    for (int i = 1; i <= grafo.dim; i++)
+    {
+        if (nodi[i - 1].tipo == TIPO_UTENTE)
+        {
+            adj_node* iteratore = get_adjlist(grafo, i);
+
+            while (iteratore != nullptr)
+            {
+                int id_nodo = get_adjnode(iteratore);
+
+                if (nodi[id_nodo - 1].tipo == TIPO_TWEET)
+                {
+                    adj_node* owner = get_adjlist(grafo, id_nodo);
+                    int id_owner = get_adjnode(owner);
+
+                    numero_like_per_utente[id_owner - 1]++;
+                }
+
+                iteratore = get_nextadj(iteratore);
+            }
+        }
+    }
+
+    return numero_like_per_utente;
+}
+
+void stampa_most_influential_people(const graph& grafo, const node* nodi, const int* numero_like_per_utente)
+{
+    int numero_like_massimo = numero_like_per_utente[0];
+
+    for (int i = 1; i < grafo.dim; i++)
+    {
+        if (numero_like_per_utente[i] > numero_like_massimo)
+        {
+            numero_like_massimo = numero_like_per_utente[i];
+        }
+    }
+
+    for (int i = 0; i < grafo.dim; i++)
+    {
+        if (numero_like_per_utente[i] == numero_like_massimo)
+        {
+            std::cout << nodi[i].cont << std::endl;
+        }
+    }
+}
+
 int main()
 {
     std::ifstream file_grafo(GRAFO_NOME_FILE);
@@ -107,9 +164,20 @@ int main()
 
             std::cout << "Grafo (verbose output):" << std::endl << std::endl;
             stampa(grafo, nodi);
-        }
 
-        return 0;
+            int* numero_like_per_utente = totalLike(grafo, nodi);
+            
+            std::cout << "I most influential people sono:" << std::endl;
+            stampa_most_influential_people(grafo, nodi, numero_like_per_utente);
+
+            return 0;
+        }
+        else
+        {
+            std::cerr << "Si è verificato un errore durante la lettura del file " << NODI_NOME_FILE << std::endl;
+
+            return 1;
+        }
     }
     else
     {
