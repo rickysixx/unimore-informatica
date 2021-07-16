@@ -1,4 +1,4 @@
 *.d
 *.cc
 *.o
-*.out
+main.out
