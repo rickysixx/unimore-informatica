@@ -108,6 +108,47 @@ void stampa(parola* parole, int numero_parole)
     }
 }
 
+void AND(parola* ii, const int numero_parole, const char* w1, const char* w2)
+{
+    parola* w1_p = cerca_parola(ii, w1, numero_parole);
+    parola* w2_p = cerca_parola(ii, w2, numero_parole);
+
+    if (w1_p == nullptr)
+    {
+        std::cerr << "La parola " << w1 << " non fa parte dell'inverted index." << std::endl;
+    }
+    else if (w2_p == nullptr)
+    {
+        std::cerr << "La parola " << w2 << " non fa parte dell'inverted index." << std::endl;
+    }
+    else
+    {
+        elem* it_w1 = w1_p->l;
+        elem* it_w2 = w2_p->l;
+
+        while (it_w1 != nullptr && it_w2 != nullptr)
+        {
+            if (head(it_w1) == head(it_w2))
+            {
+                std::cout << head(it_w1) << " ";
+
+                it_w1 = tail(it_w1);
+                it_w2 = tail(it_w2);
+            }
+            else if (head(it_w1) < head(it_w2))
+            {
+                it_w1 = tail(it_w1);
+            }
+            else
+            {
+                it_w2 = tail(it_w2);
+            }
+        }
+
+        std::cout << std::endl;
+    }
+}
+
 void update(parola*& ii, int& numero_parole, char* fileName)
 {
     std::ifstream file(fileName);
@@ -154,6 +195,8 @@ int main()
     int numero_parole;
     parola* parole = load(numero_parole);
     char nome_file[NOME_FILE_LUNGHEZZA_MASSIMA];
+    char parola_1[PAROLA_LUNGHEZZA_MASSIMA];
+    char parola_2[PAROLA_LUNGHEZZA_MASSIMA];
 
     if (parole != nullptr)
     {
@@ -165,6 +208,15 @@ int main()
 
     update(parole, numero_parole, nome_file);
     stampa(parole, numero_parole);
+
+    std::cout << "=== AND ===" << std::endl;
+    std::cout << "Inserisci la prima parola: ";
+    std::cin >> parola_1;
+
+    std::cout << "Inserisci la seconda parola: ";
+    std::cin >> parola_2;
+
+    AND(parole, numero_parole, parola_1, parola_2);
 
     return 0;
 }
