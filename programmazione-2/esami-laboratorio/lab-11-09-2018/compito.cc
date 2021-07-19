@@ -7,74 +7,80 @@ const char* INVERTED_NOME_FILE = "inverted";
 
 const unsigned int NOME_FILE_LUNGHEZZA_MASSIMA = 256;
 
-bool contiene_parola(const parola* parole, const char* parola, const int numero_parole)
-{
-    bool trovata = false;
-
-    for (int i = 0; i < numero_parole && !trovata; i++)
-    {
-        trovata = strcmp(parole[i].p, parola) == 0;
-    }
-
-    return trovata;
-}
-
-parola* cerca_parola(parola* parole, const char* str, const int numero_parole)
+parola* cerca_parola(parola* ii, const char* p, const int numero_parole)
 {
     parola* trovata = nullptr;
 
     for (int i = 0; i < numero_parole && trovata == nullptr; i++)
     {
-        if (strcmp(parole[i].p, str) == 0)
+        if (strcmp(ii[i].p, p) == 0)
         {
-            trovata = &parole[i];
+            trovata = &ii[i];
         }
     }
 
     return trovata;
 }
 
-void resize(parola*& parole, int& numero_parole)
+void inserisci_nuova_parola(parola*& ii, unsigned int& numero_parole, const parola& nuova_parola)
 {
     parola* resized = new parola[numero_parole + 1];
 
-    for (int i = 0; i < numero_parole; i++)
+    for (unsigned int i = 0; i < numero_parole; i++)
     {
-        resized[i] = parole[i];
+        resized[i] = ii[i];
     }
 
-    delete[] parole;
+    delete[] ii;
 
-    parole = resized;
+    ii = resized;
     numero_parole += 1;
+    ii[numero_parole - 1] = nuova_parola;
 }
 
-parola* load(int& dimensione)
+int cerca_id_massimo_documento(const parola* ii, const int numero_parole)
+{
+    int max = -1;
+
+    for (int i = 0; i < numero_parole; i++)
+    {
+        for (elem* it = ii[i].l; it != nullptr; it = tail(it))
+        {
+            int id_documento = head(it);
+
+            max = (id_documento > max) ? id_documento : max;
+        }
+    }
+
+    return max;
+}
+
+parola* load(unsigned int& numero_parole_caricate)
 {
     std::ifstream file(INVERTED_NOME_FILE);
 
     if (file)
     {
-        file >> dimensione;
+        file >> numero_parole_caricate;
 
-        parola* parole = new parola[dimensione];
+        parola* ii = new parola[numero_parole_caricate];
 
-        for (int i = 0; i < dimensione; i++)
+        for (unsigned int i = 0; i < numero_parole_caricate; i++)
         {
-            file >> parole[i].p;
-            file >> parole[i].n_doc;
+            file >> ii[i].p;
+            file >> ii[i].n_doc;
 
-            for (int j = 0; j < parole[i].n_doc; j++)
+            for (int j = 0; j < ii[i].n_doc; j++)
             {
                 int id_documento;
 
                 file >> id_documento;
 
-                parole[i].l = ord_insert_elem(parole[i].l, new_elem(id_documento));
+                ii[i].l = ord_insert_elem(ii[i].l, new_elem(id_documento));
             }
         }
 
-        return parole;
+        return ii;
     }
     else
     {
@@ -84,24 +90,21 @@ parola* load(int& dimensione)
     }
 }
 
-void stampa(parola* parole, int numero_parole)
+void stampa(parola* ii, int numero_parole)
 {
     for (int i = 0; i < numero_parole; i++)
     {
-        std::cout << parole[i].p << std::endl;
-        std::cout << parole[i].n_doc << " documenti" << std::endl;
-        elem* iteratore = parole[i].l;
+        std::cout << ii[i].p << std::endl;
+        std::cout << ii[i].n_doc << " documenti" << std::endl;
 
-        while (iteratore != nullptr)
+        for (elem* it = ii[i].l; it != nullptr; it = tail(it))
         {
-            std::cout << head(iteratore);
+            std::cout << head(it);
 
-            if (tail(iteratore) != nullptr)
+            if (tail(it) != nullptr)
             {
                 std::cout << " ";
             }
-
-            iteratore = tail(iteratore);
         }
 
         std::cout << std::endl;
@@ -149,7 +152,7 @@ void AND(parola* ii, const int numero_parole, const char* w1, const char* w2)
     }
 }
 
-void update(parola*& ii, int& numero_parole, char* fileName)
+void update(parola*& ii, unsigned int& numero_parole, char* fileName)
 {
     std::ifstream file(fileName);
 
@@ -172,9 +175,7 @@ void update(parola*& ii, int& numero_parole, char* fileName)
                 p->n_doc = 1;
                 p->l = new_elem(id_documento);
 
-                resize(ii, numero_parole);
-
-                ii[numero_parole - 1] = *p;
+                inserisci_nuova_parola(ii, numero_parole, *p);
             }
             else
             {
@@ -190,24 +191,84 @@ void update(parola*& ii, int& numero_parole, char* fileName)
     }
 }
 
+int* match(parola* ii, const int numero_parole_ii, char (*wl)[PAROLA_LUNGHEZZA_MASSIMA], const int numero_parole_wl, unsigned int& nr_match_trovati)
+{
+    unsigned int dimensione_array_occorrenze = cerca_id_massimo_documento(ii, numero_parole_ii) + 1;
+    unsigned int* occorrenze = new unsigned int[dimensione_array_occorrenze];
+
+    for (unsigned int i = 0; i < dimensione_array_occorrenze; i++)
+    {
+        occorrenze[i] = 0;
+    }
+
+    for (int i = 0; i < numero_parole_wl; i++)
+    {
+        parola* p = cerca_parola(ii, wl[i], numero_parole_ii);
+
+        if (p != nullptr)
+        {
+            for (elem* it = p->l; it != nullptr; it = tail(it))
+            {
+                occorrenze[head(it)]++;
+            }
+        }
+    }
+
+    nr_match_trovati = 0;
+
+    for (unsigned int i = 0; i < dimensione_array_occorrenze; i++)
+    {
+        if (occorrenze[i] != 0)
+        {
+            nr_match_trovati++;
+        }
+    }
+
+    std::cout << "[DEBUG] nr_match_trovati: " << nr_match_trovati << std::endl;
+
+    int* match_trovati = new int[nr_match_trovati];
+
+    for (unsigned int i = 0; i < nr_match_trovati; i++)
+    {
+        unsigned int max = occorrenze[0];
+        int id_documento_max = 0;
+
+        for (unsigned int j = 1; j < dimensione_array_occorrenze; j++)
+        {
+            if (occorrenze[j] > max)
+            {
+                max = occorrenze[j];
+                id_documento_max = j;
+            }
+        }
+
+        match_trovati[i] = id_documento_max;
+        occorrenze[id_documento_max] = 0;
+    }
+
+    delete[] occorrenze;
+
+    return match_trovati;
+}
+
 int main()
 {
-    int numero_parole;
-    parola* parole = load(numero_parole);
+    unsigned int numero_parole_ii;
+    parola* ii = load(numero_parole_ii);
     char nome_file[NOME_FILE_LUNGHEZZA_MASSIMA];
     char parola_1[PAROLA_LUNGHEZZA_MASSIMA];
     char parola_2[PAROLA_LUNGHEZZA_MASSIMA];
 
-    if (parole != nullptr)
+    if (ii != nullptr)
     {
-        stampa(parole, numero_parole);
+        stampa(ii, numero_parole_ii);
     }
 
     std::cout << "Inserisci il nome del file con cui aggiornare l'inverted index: ";
     std::cin >> nome_file;
 
-    update(parole, numero_parole, nome_file);
-    stampa(parole, numero_parole);
+    update(ii, numero_parole_ii, nome_file);
+    stampa(ii, numero_parole_ii);
 
     std::cout << "=== AND ===" << std::endl;
     std::cout << "Inserisci la prima parola: ";
@@ -216,7 +277,31 @@ int main()
     std::cout << "Inserisci la seconda parola: ";
     std::cin >> parola_2;
 
-    AND(parole, numero_parole, parola_1, parola_2);
+    AND(ii, numero_parole_ii, parola_1, parola_2);
+
+    std::cout << "=== MATCH ===" << std::endl;
+    unsigned int numero_parole_per_match = 0;
+
+    std::cout << "Quante parole vuoi inserire? ";
+    std::cin >> numero_parole_per_match;
+
+    char (*wl)[PAROLA_LUNGHEZZA_MASSIMA] = new char[numero_parole_per_match][PAROLA_LUNGHEZZA_MASSIMA];
+
+    for (unsigned int i = 0; i < numero_parole_per_match; i++)
+    {
+        std::cout << "Inserisci la parola " << (i + 1) << ": ";
+        std::cin >> wl[i];
+    }
+
+    unsigned int nr_match_trovati;
+    int* matches = match(ii, numero_parole_ii, wl, numero_parole_per_match, nr_match_trovati);
+    
+    for (unsigned int i = 0; i < nr_match_trovati; i++)
+    {
+        std::cout << matches[i] << " ";
+    }
+
+    std::cout << std::endl;
 
     return 0;
 }
