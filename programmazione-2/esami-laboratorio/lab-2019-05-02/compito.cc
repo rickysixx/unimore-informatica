@@ -33,41 +33,6 @@ void stampa(lista lista)
     }
 }
 
-carta* scala(lista carte, int& lunghezza)
-{
-    carta* prima_carta_scala = nullptr;
-    lunghezza = 0;
-    elem* prima_carta_scala_corrente = carte;
-    int lunghezza_scala_corrente = 1;
-
-    for (elem* it = tail(carte); it != nullptr; it = tail(it))
-    {
-        if (prima_carta_scala_corrente->inf.seme == head(it).seme && head(it).valore == prev(it)->inf.valore + 1)
-        { 
-            ++lunghezza_scala_corrente;
-        }
-        else
-        {
-            if (lunghezza_scala_corrente >= 3 && lunghezza_scala_corrente > lunghezza)
-            {
-                prima_carta_scala = &prima_carta_scala_corrente->inf;
-                lunghezza = lunghezza_scala_corrente;
-            }
-
-            prima_carta_scala_corrente = it;
-            lunghezza_scala_corrente = 1;
-        }
-
-        if (lunghezza_scala_corrente >= 3 && lunghezza_scala_corrente > lunghezza)
-        {
-            prima_carta_scala = &prima_carta_scala_corrente->inf;
-            lunghezza = lunghezza_scala_corrente;
-        }
-    }
-
-    return prima_carta_scala;
-}
-
 void stampa_scala(const lista& lista, const carta* prima_carta_scala, const int lunghezza_scala)
 {
     elem* it = search(lista, *prima_carta_scala);
@@ -81,10 +46,53 @@ void stampa_scala(const lista& lista, const carta* prima_carta_scala, const int 
     }
 }
 
+carta* best_scala(lista carte, int& lunghezza_scala_migliore)
+{
+    int punteggio_scala_migliore = 0;
+    int punteggio_scala_corrente = 0;
+    carta* prima_carta_scala_migliore = nullptr;
+    elem* prima_carta_scala_corrente = carte;
+    int lunghezza_scala_corrente = 1;
+    lunghezza_scala_migliore = 0;
+    
+    for (elem* it = tail(carte); it != nullptr; it = tail(it))
+    {
+        carta carta_corrente = head(it);
+
+        if (carta_corrente.seme == head(prima_carta_scala_corrente).seme && carta_corrente.valore == head(prev(it)).valore + 1)
+        {
+            punteggio_scala_corrente += carta_corrente.valore;
+            lunghezza_scala_corrente++;
+
+            if (tail(it) == nullptr && lunghezza_scala_corrente >= 3 && punteggio_scala_corrente > punteggio_scala_migliore)
+            {
+                punteggio_scala_migliore = punteggio_scala_corrente;
+                prima_carta_scala_migliore = &prima_carta_scala_corrente->inf;
+                lunghezza_scala_migliore = lunghezza_scala_corrente;
+            }
+        }
+        else
+        {
+            if (lunghezza_scala_corrente >= 3 && punteggio_scala_corrente > punteggio_scala_migliore)
+            {
+                punteggio_scala_migliore = punteggio_scala_corrente;
+                prima_carta_scala_migliore = &prima_carta_scala_corrente->inf;
+                lunghezza_scala_migliore = lunghezza_scala_corrente;
+            }
+
+            punteggio_scala_corrente = 0;
+            prima_carta_scala_corrente = it;
+            lunghezza_scala_corrente = 1;
+        }
+    }
+    
+    return prima_carta_scala_migliore;
+}
+
 int cala(lista& carte)
 {
     int numero_carte_scala;
-    elem* it = search(carte, *scala(carte, numero_carte_scala));
+    elem* it = search(carte, *best_scala(carte, numero_carte_scala));
     int punteggio = 0;
 
     std::cout << "Carte calate: ";
@@ -134,10 +142,10 @@ int main()
 
     int lunghezza_scala_giocatore_1;
     int lunghezza_scala_giocatore_2;
-    carta* scala_giocatore_1 = scala(giocatore_1, lunghezza_scala_giocatore_1);
-    carta* scala_giocatore_2 = scala(giocatore_2, lunghezza_scala_giocatore_2);
+    carta* scala_giocatore_1 = best_scala(giocatore_1, lunghezza_scala_giocatore_1);
+    carta* scala_giocatore_2 = best_scala(giocatore_2, lunghezza_scala_giocatore_2);
 
-    std::cout << "Scale:" << std::endl;
+    std::cout << "Scale migliori:" << std::endl;
 
     std::cout << "giocatore 1: ";
     stampa_scala(giocatore_1, scala_giocatore_1, lunghezza_scala_giocatore_1);
