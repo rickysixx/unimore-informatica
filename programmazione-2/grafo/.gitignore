@@ -1,0 +1,4 @@
+*.d
+main.out
+*.o
+doc
