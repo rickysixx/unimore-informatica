@@ -1,0 +1,2 @@
+- il riassunto è basato sul programma dell'a.a. 2023-2024
+- nel riassunto manca tutta la parte sul crimine informatico del prof. Apruzzese. La parte di Leoncini invece è completa, ad eccezione di alcune parti che sono in viola nei notebook.
