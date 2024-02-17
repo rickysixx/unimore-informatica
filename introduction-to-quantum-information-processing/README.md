@@ -1,0 +1,2 @@
+- il riassunto è basato sul programma dell'a.a. 2023-2024
+- nel riassunto mancano le parti col pallino giallo nelle slide del prof. Troiani (che sono opzionali, non richieste all'esame) ed alcuni argomenti richiesti solo per la lode (es. entanglement teleportation)
