@@ -1,0 +1,1 @@
+- il riassunto è basato sul programma dell'a.a. 2022-2023

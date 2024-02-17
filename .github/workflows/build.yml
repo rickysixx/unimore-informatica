@@ -15,6 +15,7 @@ jobs:
         with:
           source_file: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.typ
+            cyber-physical-security/riassunto_cpsec.typ
             high-performance-computing/riassunto_hpc.typ
             introduction-to-quantum-information-processing/riassunto_quantum.typ
       - name: Upload PDF files
@@ -23,6 +24,7 @@ jobs:
           name: PDFs
           path: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.pdf
+            cyber-physical-security/riassunto_cpsec.pdf
             high-performance-computing/riassunto_hpc.pdf
             introduction-to-quantum-information-processing/riassunto_quantum.pdf
       - name: Get current date
@@ -35,5 +37,6 @@ jobs:
           name: "${{ github.ref_name }} — ${{ env.DATE }}"
           files: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.pdf
+            cyber-physical-security/riassunto_cpsec.pdf
             high-performance-computing/riassunto_hpc.pdf
             introduction-to-quantum-information-processing/riassunto_quantum.pdf
