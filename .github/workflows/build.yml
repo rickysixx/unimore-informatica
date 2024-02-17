@@ -1,0 +1,33 @@
+name: Build Typst documents
+on: [push, workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  build_typst_documents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Typst documents
+        uses: lvignoli/typst-action@main
+        with:
+          source_file: |
+            algoritmi-di-crittografia/riassunto.typ
+      - name: Upload PDF files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDFs
+          path: |
+            algoritmi-di-crittografia/riassunto.pdf
+      - name: Get current date
+        id: date
+        run: echo "DATE=$(date +%Y-%m-%d_%H:%M)" >> $GITHUB_ENV
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        if: github.ref_type == 'tag'
+        with:
+          name: "${{ github.ref_name }} — ${{ env.DATE }}"
+          files: |
+            algoritmi-di-crittografia/riassunto.pdf
