@@ -15,12 +15,14 @@ jobs:
         with:
           source_file: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.typ
+            introduction-to-quantum-information-processing/riassunto_quantum.typ
       - name: Upload PDF files
         uses: actions/upload-artifact@v4
         with:
           name: PDFs
           path: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.pdf
+            introduction-to-quantum-information-processing/riassunto_quantum.pdf
       - name: Get current date
         id: date
         run: echo "DATE=$(date +%Y-%m-%d_%H:%M)" >> $GITHUB_ENV
@@ -31,3 +33,4 @@ jobs:
           name: "${{ github.ref_name }} — ${{ env.DATE }}"
           files: |
             algoritmi-di-crittografia/riassunto_algoritmi_crittografia.pdf
+            introduction-to-quantum-information-processing/riassunto_quantum.pdf
